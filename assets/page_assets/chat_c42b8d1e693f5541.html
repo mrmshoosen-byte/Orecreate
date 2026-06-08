@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>ORE</title>
+        <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta charset="UTF-8">
+
+        <!-- Open Graph -->
+        <meta property="og:title" content="ORE">
+        <meta property="og:description" content="Future-proof electronic cash">
+        <meta property="og:image" content="https://ore.com/assets/opengraph.png">
+        <meta property="og:image:width" content="1200">
+        <meta property="og:image:height" content="675">
+        <meta property="og:url" content="https://ore.com">
+        <meta property="og:type" content="website">
+
+        <!-- Twitter / X -->
+        <meta name="twitter:card" content="summary_large_image">
+        <meta name="twitter:title" content="ORE">
+        <meta name="twitter:description" content="Future-proof electronic cash">
+        <meta name="twitter:image" content="https://ore.com/assets/opengraph.png">
+
+        <!-- Favicon & Apple Touch Icon -->
+        <link rel="icon" type="image/png" href="/assets/favicon.png?v=2">
+        <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png?v=2">
+        <link rel="apple-touch-icon" sizes="152x152" href="/assets/apple-touch-icon-152x152.png?v=2">
+        <link rel="apple-touch-icon" sizes="167x167" href="/assets/apple-touch-icon-167x167.png?v=2">
+        <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon-180x180.png?v=2">
+
+        <!-- CRITICAL: Capture OAuth params BEFORE anything else runs -->
+        <script>
+            (function() {
+                var params = new URLSearchParams(window.location.search);
+                if (params.has('privy_oauth_state')) {
+                    console.log('[OAuth Early Capture] Saving OAuth callback params');
+                    sessionStorage.setItem('privy_oauth_callback', window.location.search);
+                }
+            })();
+        </script>
+    <link rel="preload" as="script" href="/./assets/ore-app-dxh991b8c2aa67a2bd1.js" crossorigin></head>
+    <body>
+        <div id="main"></div>
+    <script type="module" async src="/./assets/ore-app-dxh991b8c2aa67a2bd1.js"></script>
+            </body>
+</html>

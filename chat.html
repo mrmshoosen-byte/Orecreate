@@ -1,0 +1,591 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ORE Chat</title>
+  <link rel="icon" href="assets/icon.png">
+  <style>
+    @font-face {
+      font-family: Pilat;
+      src: url("assets/Pilat-Regular.otf") format("opentype");
+      font-weight: 400;
+    }
+    @font-face {
+      font-family: Pilat;
+      src: url("assets/Pilat-Demi.otf") format("opentype");
+      font-weight: 700;
+    }
+    :root {
+      --bg: #050505;
+      --panel: #09090b;
+      --border: #1f2937;
+      --muted: #8b949e;
+      --text: #f9fafb;
+      --mid: #cbd5e1;
+      --live: #10b981;
+      --blue: #2563eb;
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Pilat, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      overflow: hidden;
+    }
+    a { color: inherit; text-decoration: none; }
+    .top {
+      height: 80px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 28px;
+      padding: 0 24px;
+      background: #000;
+      position: relative;
+      z-index: 5;
+    }
+    .logo {
+      font-weight: 900;
+      letter-spacing: .08em;
+      font-size: 24px;
+    }
+    .nav {
+      display: flex;
+      align-items: center;
+      gap: 22px;
+      color: var(--muted);
+      font-weight: 700;
+      font-size: 14px;
+    }
+    .nav a:hover, .nav .active { color: var(--text); }
+    .spacer { flex: 1; }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      height: 36px;
+      padding: 0 13px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 800;
+      background: rgba(255, 255, 255, .045);
+      color: var(--mid);
+      border: 1px solid rgba(255, 255, 255, .05);
+    }
+    .connect {
+      height: 40px;
+      padding: 0 20px;
+      border: 0;
+      border-radius: 999px;
+      background: #fff;
+      color: #000;
+      font-weight: 900;
+      cursor: pointer;
+    }
+    .status {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      height: 30px;
+      padding: 0 11px;
+      border-radius: 999px;
+      background: rgba(16, 185, 129, .12);
+      color: #86efac;
+      border: 1px solid rgba(16, 185, 129, .35);
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: .04em;
+    }
+    .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: var(--live);
+      box-shadow: 0 0 14px var(--live);
+    }
+    .chat-shell {
+      height: calc(100vh - 80px);
+      position: relative;
+      display: flex;
+      justify-content: center;
+      background: var(--bg);
+    }
+    .messages {
+      width: min(100%, 1280px);
+      height: 100%;
+      overflow-y: auto;
+      padding: 18px 0 110px;
+      scrollbar-width: none;
+    }
+    .messages::-webkit-scrollbar { display: none; }
+    .msg {
+      padding: 6px 16px;
+      transition: background .15s ease;
+    }
+    .msg:hover { background: rgba(255, 255, 255, .035); }
+    .row {
+      display: flex;
+      gap: 10px;
+      min-width: 0;
+    }
+    .avatar {
+      width: 34px;
+      height: 34px;
+      border-radius: 999px;
+      object-fit: cover;
+      flex: 0 0 auto;
+      margin-top: 4px;
+      background: linear-gradient(135deg, #334155, #111827);
+    }
+    .content { min-width: 0; flex: 1; }
+    .meta {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 2px;
+    }
+    .name {
+      color: #d1d5db;
+      font-size: 15px;
+      font-weight: 900;
+    }
+    .time {
+      color: #6b7280;
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .text {
+      color: #aeb6c2;
+      font-size: 15px;
+      line-height: 1.36;
+      font-weight: 600;
+      overflow-wrap: anywhere;
+    }
+    .composer {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 20;
+      height: 66px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px 10px 16px;
+      background: var(--panel);
+      border-top: 1px solid var(--border);
+    }
+    .composer input {
+      flex: 1;
+      min-width: 0;
+      height: 46px;
+      border: 0;
+      outline: 0;
+      color: var(--text);
+      background: transparent;
+      font: 600 15px Pilat, ui-sans-serif, system-ui;
+    }
+    .composer input::placeholder { color: var(--muted); }
+    .composer button {
+      width: 40px;
+      height: 40px;
+      border: 0;
+      border-radius: 999px;
+      color: var(--mid);
+      background: transparent;
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      transition: background .15s ease, color .15s ease, transform .15s ease;
+    }
+    .composer button:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, .08);
+      transform: rotate(-8deg);
+    }
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 82px;
+      transform: translateX(-50%);
+      z-index: 40;
+      min-width: 240px;
+      max-width: min(520px, calc(100vw - 28px));
+      padding: 11px 14px;
+      border-radius: 9px;
+      background: #111827;
+      color: var(--text);
+      border: 1px solid #374151;
+      font-size: 13px;
+      font-weight: 800;
+      display: none;
+    }
+    .toast.show { display: block; }
+    .send-status {
+      position: fixed;
+      right: 14px;
+      bottom: 78px;
+      z-index: 39;
+      max-width: min(520px, calc(100vw - 28px));
+      color: #9ca3af;
+      background: rgba(17, 24, 39, .9);
+      border: 1px solid rgba(55, 65, 81, .8);
+      border-radius: 8px;
+      padding: 8px 10px;
+      font-size: 12px;
+      font-weight: 800;
+      display: none;
+    }
+    .send-status.show { display: block; }
+    .mobile-nav {
+      display: none;
+    }
+    @media (max-width: 800px) {
+      .top { height: 64px; padding: 0 12px; gap: 12px; }
+      .logo { font-size: 18px; }
+      .nav { display: none; }
+      .pill { display: none; }
+      .connect { height: 36px; padding: 0 14px; }
+      .chat-shell { height: calc(100vh - 64px); }
+      .composer { bottom: 64px; }
+      .messages { padding-bottom: 176px; }
+      .mobile-nav {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: 64px;
+        z-index: 21;
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        background: #09090b;
+        border-top: 1px solid var(--border);
+      }
+      .mobile-nav a {
+        display: grid;
+        place-items: center;
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 800;
+      }
+      .mobile-nav .active { color: #fff; }
+    }
+  </style>
+</head>
+<body>
+  <header class="top">
+    <a class="logo" href="index.html">ORE</a>
+    <nav class="nav">
+      <a href="/about">About</a>
+      <a href="explore.html">Explore</a>
+      <a href="stake.html">Stake</a>
+      <a href="shield.html">Shield</a>
+      <a class="active" href="chat.html">Chat</a>
+    </nav>
+    <span class="status"><span class="dot"></span><span id="liveLabel">LIVE BOOT</span></span>
+    <div class="spacer"></div>
+    <a class="pill" href="https://jup.ag/tokens/oreoU2P8bN6jkk3jbaiVxYnG1dCXcYxwhwyK9jSybcp" target="_blank" rel="noopener">ORE <span id="orePrice">$--</span></a>
+    <a class="pill" href="https://jup.ag/tokens/So11111111111111111111111111111111111111112" target="_blank" rel="noopener">SOL <span id="solPrice">$--</span></a>
+    <button class="connect" id="connectBtn" type="button">Connect</button>
+  </header>
+
+  <main class="chat-shell">
+    <section class="messages" id="messages" aria-live="polite"></section>
+  </main>
+
+  <form class="composer" id="composer">
+    <input id="chatInput" type="text" autocomplete="off" placeholder="Connect wallet to chat...">
+    <button id="sendBtn" type="submit" aria-label="Send message" title="Send message">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3.478 2.405a.75.75 0 0 0-.926.94l2.432 7.905H13.5a.75.75 0 0 1 0 1.5H4.984l-2.432 7.905a.75.75 0 0 0 .926.94 60.519 60.519 0 0 0 18.445-10.32.75.75 0 0 0 0-1.154A60.52 60.52 0 0 0 3.478 2.405Z"></path></svg>
+    </button>
+  </form>
+
+  <nav class="mobile-nav">
+    <a href="index.html">Mine</a>
+    <a class="active" href="chat.html">Chat</a>
+    <a href="stake.html">Stake</a>
+    <a href="explore.html">Explore</a>
+    <a href="shield.html">Shield</a>
+  </nav>
+
+  <div class="toast" id="toast"></div>
+  <div class="send-status" id="sendStatus"></div>
+
+  <script>
+    (function () {
+      const API_BASE = location.protocol === "file:" ? "http://127.0.0.1:8087" : "";
+      const messagesEl = document.getElementById("messages");
+      const liveLabel = document.getElementById("liveLabel");
+      const input = document.getElementById("chatInput");
+      const connectBtn = document.getElementById("connectBtn");
+      const composer = document.getElementById("composer");
+      const toast = document.getElementById("toast");
+      const sendStatus = document.getElementById("sendStatus");
+      const sendBtn = document.getElementById("sendBtn");
+      let walletProvider = null;
+      let walletAddress = localStorage.getItem("ore.wallet.address") || "";
+      let newestId = "";
+
+      function esc(value) {
+        return String(value == null ? "" : value).replace(/[&<>"']/g, (ch) => ({
+          "&": "&amp;",
+          "<": "&lt;",
+          ">": "&gt;",
+          "\"": "&quot;",
+          "'": "&#39;"
+        })[ch]);
+      }
+
+      function shortAddress(value) {
+        value = String(value || "");
+        return value.length > 10 ? value.slice(0, 4) + "..." + value.slice(-4) : value;
+      }
+
+      function showToast(text) {
+        toast.textContent = text;
+        toast.classList.add("show");
+        clearTimeout(showToast.timer);
+        showToast.timer = setTimeout(() => toast.classList.remove("show"), 12000);
+      }
+
+      function setSendStatus(text) {
+        sendStatus.textContent = text || "";
+        sendStatus.classList.toggle("show", Boolean(text));
+      }
+
+      function formatTime(ts) {
+        const n = Number(ts || 0);
+        if (!n) return "";
+        return new Date(n * 1000).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+      }
+
+      function render(messages) {
+        if (!Array.isArray(messages)) return;
+        newestId = messages[0] && messages[0].id ? String(messages[0].id) : newestId;
+        messagesEl.innerHTML = messages.slice().reverse().map((message) => {
+          const name = esc(message.username || shortAddress(message.authority) || "Miner");
+          const text = esc(message.text || message.message || message.content || "");
+          const time = esc(formatTime(message.ts || message.created_at || message.timestamp));
+          const photo = message.profile_photo_url
+            ? `<img class="avatar" src="${esc(message.profile_photo_url)}" alt="">`
+            : `<div class="avatar"></div>`;
+          return `<article class="msg" data-chat-id="${esc(message.id || "")}">
+            <div class="row">
+              ${photo}
+              <div class="content">
+                <div class="meta"><span class="name">${name}</span><span class="time">${time}</span></div>
+                <div class="text">${text}</div>
+              </div>
+            </div>
+          </article>`;
+        }).join("");
+        messagesEl.scrollTop = messagesEl.scrollHeight;
+      }
+
+      async function refreshChat() {
+        try {
+          const response = await fetch(`${API_BASE}/ore-api/chat/history?limit=50`, { cache: "no-store" });
+          if (!response.ok) throw new Error(`Chat ${response.status}`);
+          const data = await response.json();
+          render(data.messages || []);
+          liveLabel.textContent = `LIVE ${new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" })}`;
+        } catch (error) {
+          liveLabel.textContent = "LIVE ERROR";
+          showToast(`Live chat failed: ${error.message || error}`);
+        }
+      }
+
+      async function refreshPrices() {
+        try {
+          const ids = "oreoU2P8bN6jkk3jbaiVxYnG1dCXcYxwhwyK9jSybcp,So11111111111111111111111111111111111111112";
+          const response = await fetch(`${API_BASE}/jup-api/price/v3?ids=${ids}`);
+          if (!response.ok) return;
+          const prices = await response.json();
+          const ore = prices.oreoU2P8bN6jkk3jbaiVxYnG1dCXcYxwhwyK9jSybcp && prices.oreoU2P8bN6jkk3jbaiVxYnG1dCXcYxwhwyK9jSybcp.usdPrice;
+          const sol = prices.So11111111111111111111111111111111111111112 && prices.So11111111111111111111111111111111111111112.usdPrice;
+          if (Number.isFinite(Number(ore))) document.getElementById("orePrice").textContent = `$${Number(ore).toFixed(2)}`;
+          if (Number.isFinite(Number(sol))) document.getElementById("solPrice").textContent = `$${Number(sol).toFixed(2)}`;
+        } catch (_) {
+          // Prices are nice to have; chat should keep working without them.
+        }
+      }
+
+      function detectWallet() {
+        const solana = window.solana;
+        if (solana && (solana.isPhantom || solana.isBackpack || solana.connect)) return solana;
+        if (window.phantom && window.phantom.solana) return window.phantom.solana;
+        if (window.backpack && window.backpack.solana) return window.backpack.solana;
+        return null;
+      }
+
+      function updateWalletUi() {
+        connectBtn.textContent = walletAddress ? shortAddress(walletAddress) : "Connect";
+        input.placeholder = walletAddress ? "Message Ore chat..." : "Connect wallet to chat...";
+      }
+
+      async function connectWallet() {
+        setSendStatus("Connecting wallet...");
+        walletProvider = detectWallet();
+        if (!walletProvider) throw new Error("Open this in a browser with Phantom or Backpack installed.");
+        const result = await walletProvider.connect();
+        const key = result && result.publicKey ? result.publicKey : walletProvider.publicKey;
+        walletAddress = key && key.toString ? key.toString() : String(key || "");
+        if (!walletAddress) throw new Error("Wallet did not return an address.");
+        localStorage.setItem("ore.wallet.address", walletAddress);
+        updateWalletUi();
+        return walletAddress;
+      }
+
+      function bytesToBase64(bytes) {
+        const array = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes || []);
+        let binary = "";
+        array.forEach((byte) => { binary += String.fromCharCode(byte); });
+        return btoa(binary);
+      }
+
+      function bytesToBase58(bytes) {
+        const alphabet = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
+        const source = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes || []);
+        if (!source.length) return "";
+        const digits = [0];
+        for (const byte of source) {
+          let carry = byte;
+          for (let i = 0; i < digits.length; i += 1) {
+            carry += digits[i] << 8;
+            digits[i] = carry % 58;
+            carry = (carry / 58) | 0;
+          }
+          while (carry) {
+            digits.push(carry % 58);
+            carry = (carry / 58) | 0;
+          }
+        }
+        let output = "";
+        for (const byte of source) {
+          if (byte !== 0) break;
+          output += alphabet[0];
+        }
+        for (let i = digits.length - 1; i >= 0; i -= 1) output += alphabet[digits[i]];
+        return output;
+      }
+
+      function storedAuthToken() {
+        return walletAddress ? localStorage.getItem(`ore_auth_token_${walletAddress}`) : "";
+      }
+
+      async function getAuthToken() {
+        const cached = storedAuthToken();
+        if (cached) return cached;
+        if (!walletAddress) await connectWallet();
+        walletProvider = walletProvider || detectWallet();
+        if (!walletProvider || typeof walletProvider.signMessage !== "function") {
+          throw new Error("Wallet message signing is required for ORE chat.");
+        }
+        setSendStatus("Waiting for wallet signature...");
+        const message = `Please sign this message to authenticate with ORE.\nTimestamp: ${Date.now()}`;
+        const encoded = new TextEncoder().encode(message);
+        const signed = await walletProvider.signMessage(encoded, "utf8");
+        const signatureBytes = signed && (signed.signature || signed);
+        const signature = bytesToBase64(signatureBytes);
+        const signatureBs58 = bytesToBase58(signatureBytes);
+        const messageB64 = bytesToBase64(encoded);
+        setSendStatus("Authenticating with ORE chat...");
+        const response = await fetch(`${API_BASE}/auth/login`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            message,
+            msg: message,
+            b64: messageB64,
+            message_b64: messageB64,
+            signature,
+            signature_bs58: signatureBs58,
+            signatureBase58: signatureBs58,
+            client_pubkey: walletAddress,
+            pubkey: walletAddress,
+            authority: walletAddress,
+            wallet: walletAddress
+          })
+        });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || "ORE chat auth failed.");
+        const token = result.token || result.jwt || result.access_token || (result.response && (result.response.token || result.response.jwt || result.response.access_token));
+        if (!token) throw new Error("ORE auth did not return a chat token.");
+        localStorage.setItem(`ore_auth_token_${walletAddress}`, token);
+        return token;
+      }
+
+      async function sendMessage(text) {
+        let token = await getAuthToken();
+        setSendStatus("Sending message to ORE chat...");
+        const id = makeMessageId();
+        const ts = makeMessageTimestamp();
+        const response = await fetch(`${API_BASE}/chat/send`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id, ts, text, message: text, username: shortAddress(walletAddress), wallet: walletAddress, authority: walletAddress, token })
+        });
+        const result = await response.json();
+        if (!response.ok && walletAddress && /401|403|auth|token|unauthor/i.test(result.error || "")) {
+          localStorage.removeItem(`ore_auth_token_${walletAddress}`);
+          setSendStatus("Chat token expired. Signing again...");
+          token = await getAuthToken();
+          const retry = await fetch(`${API_BASE}/chat/send`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ id, ts, text, message: text, username: shortAddress(walletAddress), wallet: walletAddress, authority: walletAddress, token })
+          });
+          const retryResult = await retry.json();
+          if (!retry.ok) throw new Error(retryResult.error || "Could not send chat message.");
+          return retryResult;
+        }
+        if (!response.ok) throw new Error(result.error || "Could not send chat message.");
+        return result;
+      }
+
+      function makeMessageId() {
+        return Date.now();
+      }
+
+      function makeMessageTimestamp() {
+        return Math.floor(Date.now() / 1000);
+      }
+
+      connectBtn.addEventListener("click", () => {
+        connectWallet().catch((error) => showToast(error.message || String(error)));
+      });
+
+      composer.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const text = input.value.trim();
+        if (!text) return;
+        input.value = "";
+        sendBtn.disabled = true;
+        try {
+          await sendMessage(text);
+          setSendStatus("Message sent. Refreshing chat...");
+          await refreshChat();
+          setSendStatus("");
+        } catch (error) {
+          input.value = text;
+          setSendStatus("");
+          showToast(error.message || String(error));
+        } finally {
+          sendBtn.disabled = false;
+        }
+      });
+
+      updateWalletUi();
+      refreshChat();
+      refreshPrices();
+      setInterval(refreshChat, 2500);
+      setInterval(refreshPrices, 15000);
+    })();
+  </script>
+</body>
+</html>
