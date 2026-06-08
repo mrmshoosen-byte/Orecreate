@@ -73,8 +73,9 @@ server.on("clientError", (error, socket) => {
 });
 
 async function handleRequest(request, response) {
-    let route = decodeURIComponent(request.url.split("?")[0]);
-    const query = request.url.includes("?") ? request.url.slice(request.url.indexOf("?")) : "";
+    const parsedUrl = new URL(request.url || "/", `https://${request.headers.host || "127.0.0.1"}`);
+    let route = decodeURIComponent(parsedUrl.pathname);
+    const query = parsedUrl.search;
 
     if (request.method === "OPTIONS") {
       response.writeHead(204, corsHeaders());
